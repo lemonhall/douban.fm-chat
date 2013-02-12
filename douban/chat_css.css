@@ -30,7 +30,8 @@
 .me {
     float: left;   
     margin: 5px 45px 5px 20px;
-    font-size: 20px;         
+    font-size: 20px;
+    clear:both;         
 }
 
 .me::before {
@@ -41,10 +42,20 @@
 .you {
     float: right;    
     margin: 5px 20px 5px 45px;
-    font-size: 20px;           
+    font-size: 20px;
+    clear:both;           
 }
 
 .you::before {
     box-shadow: 2px -2px 2px 0 rgba( 178, 178, 178, .4 );
     right: -9px;    
+}
+
+
+#chat_content{
+    overflow-y:scroll;
+    left:20px;
+    height:600px;
+    width:400px;
+    border:1px;
 }
