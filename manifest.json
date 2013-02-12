@@ -15,6 +15,7 @@
       "matches" : [
         "http://douban.fm/*"
       ],
+      "css": ["douban/chat_css.css"],
       "js" : ["lib/jquery-1.7.2.min.js",
               "douban/socket.io.js",
               "douban/common.js"
