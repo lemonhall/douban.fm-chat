@@ -1,0 +1,36 @@
+<html>
+<head>
+<title>Captcha</title>
+</head>
+<body>
+<script src="/socket.io/socket.io.js"></script>
+<script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+
+
+
+<img id="captcha_img"/></br>
+<input id="captcha_text" type="text"/><br>
+<input id="btn_ok" type="button" value="captcha"/>
+
+<script>
+  var socket = io.connect('http://localhost:9000');
+  var captcha_img=$("#captcha_img");
+  var captcha_text=$("#captcha_text");
+  var btn_ok=$("#btn_ok");
+
+  btn_ok.bind("click",function(){
+  	console.log(captcha_text.val());
+  	var text=captcha_text.val();
+  	socket.emit('Got_captcha', { text: text});
+  });
+  //console.log(captcha_img);
+  
+  socket.on('news', function (data) {
+    //console.log(data);
+    var img_url=data.img_url;
+    //console.log(img_url);
+    captcha_img.attr("src",img_url);
+  });
+</script>
+</body>
+</html>
