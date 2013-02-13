@@ -1,11 +1,138 @@
-var socket = io.connect('http://localhost:9000');
+var socket=null;
 
+var mine_profile={};
 var bubbler_song_info=localStorage['bubbler_song_info'];
 	bubbler_song_info=JSON.parse(bubbler_song_info);
+var check_channel=function(){
+		setInterval(function(){
+			console.log(socket.socket.open);
+			if(socket.socket.open){
 
-console.log(bubbler_song_info);
-var mine_profile={};
+			}else{
 
+			}
+		},10000);
+}
+console.log(bubbler_song_info.channel);
+
+
+
+var __getServerAddress=function(){
+		//console.log("I am getting the user profile~~~");
+		var mine='http://www.douban.com/note/262277737/';
+		var options={responseType:'document',uri:mine};
+		var that=this;
+		var deferred = $.Deferred(); 
+		var promise = deferred.promise();
+        var xhr = new XMLHttpRequest(),
+            method = options.method || 'get';
+        xhr.responseType = options.responseType ||'document';   
+
+		xhr.onload = function() {
+			deferred.resolve(xhr);
+		};
+
+        xhr.onerror = function(e) {
+			deferred.reject(xhr, e);
+        }
+    
+        xhr.open(method, options.uri);
+        xhr.send();
+    
+        //xhr.send((options.data) ? urlstringify(options.data) : null);
+
+		return promise;
+	},
+	verifyServerAddress=function(IP){
+		var re=/http/;
+		return re.test(IP);
+	},
+	getServerAddress=function(){
+		//缓存策略
+		//TODO:带上时间戳，让缓存别那么傻，另外边界条件也得好好检查
+		//console.log(localStorage['douban_mine_profile']);
+		var deferred = $.Deferred(); 
+		var promise = deferred.promise();
+
+		if (localStorage['fmchat_serverAddress']) {
+			var temp=localStorage.getItem('fmchat_serverAddress');
+			//全局变量
+			if (verifyServerAddress(temp)) {
+				deferred.resolve(temp);
+			}else{
+				deferred.reject("fail to get a verifyed ServerAddress..");
+			}
+			//console.log(temp);
+		}else{
+		__getServerAddress().then(function(xhr){
+			console.log(xhr);
+			var div=$(xhr.response).find("#link-report");
+			var serverAddress_a=$(div).find("a:first");
+			var serverAddress=serverAddress_a[0].href;
+
+			if (verifyServerAddress(serverAddress)) {
+				//是第一次，则设置标记,初始化一个空数组，并设置给localStorage
+  				localStorage.setItem('fmchat_serverAddress', serverAddress);
+				deferred.resolve(serverAddress);
+			}else{
+				deferred.reject("fail to get a verifyed ServerAddress..");
+			}
+			//console.log(serverAddress);
+
+
+  		});//END of getServerAddress()
+
+		}//END of else
+
+		return promise;
+	},
+	check_connection=function(){
+		setInterval(function(){
+			console.log(socket.socket.open);
+			if(socket.socket.open){
+
+			}else{
+
+			}
+		},1000);
+	},
+	init_connection=function(){
+		getServerAddress().then(function(address){
+			try{
+				socket= io.connect(address);
+			}catch(e){
+				console.log(e);
+			}
+
+			socket.emit("join_room",bubbler_song_info.channel);
+
+			//接受新消息的逻辑部分
+			socket.on("new_message",function(data){
+					console.log(data);
+					var chat_content=$("#chat_content");
+					var message=data.message;
+					var avtor=data.avtor;
+					if(avtor==mine_profile.usr_img){
+							//Do nothing......
+							console.log("message from myself");
+					}else{
+					chat_content.append("<div class='bubble you'>"+message+"&nbsp;&nbsp;<img src="+avtor+"></div>");
+						var t=$("#chat_content")[0];
+						t.scrollTop = t.scrollHeight;
+					}
+
+			});
+
+
+
+		},function(e){
+			console.log(e);
+			localStorage.setItem('fmchat_serverAddress', "");
+			// setTimeout(function(){
+			// 	init_connection();
+			// },5000);
+		});
+	};
 
 
 
@@ -98,12 +225,10 @@ var __getUserProfile=function(){
 	});
 
 	},
+	addMessageToBoard=function(){
+
+	},
 	init_chat_window=function(){
-
-		//初始化UI界面
-		init_ui();
-
-
 	var chat_content=$("#chat_content");
 	var chat_box=$("#chat_box");
 
@@ -128,23 +253,20 @@ var __getUserProfile=function(){
         }
 	});
 
-	//接受新消息的逻辑部分
-	socket.on("new_message",function(data){
-			console.log(data);
-			var message=data.message;
-			var avtor=data.avtor;
-
-			chat_content.append("<div class='bubble you'>"+message+"&nbsp;&nbsp;<img src="+avtor+"></div>");
-			var t=$("#chat_content")[0];
-			t.scrollTop = t.scrollHeight;
-	});
-
-
 };
 
 var router=function(){
+
 		getUserProfile();
+		//初始化UI界面
+		init_ui();
+		//初始化ws链接，如果链接有问题，则使输入框不可用
+		init_connection();
 		init_chat_window();
+
+		
+
+
 };//END of router()
 
 
