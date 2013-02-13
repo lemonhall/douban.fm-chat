@@ -30,6 +30,7 @@
         "webRequestBlocking",
         "background",
         "unlimitedStorage",
-        "http://douban.fm/*"
+        "http://douban.fm/*",
+        "http://www.douban.com/*"
     ]
 }
