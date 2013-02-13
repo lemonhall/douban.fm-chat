@@ -1,20 +1,29 @@
 var socket=null;
 
 var mine_profile={};
-var bubbler_song_info=localStorage['bubbler_song_info'];
-	bubbler_song_info=JSON.parse(bubbler_song_info);
-var check_channel=function(){
-		setInterval(function(){
-			console.log(socket.socket.open);
-			if(socket.socket.open){
+var gbubbler_song_info=localStorage['bubbler_song_info'];
+	gbubbler_song_info=JSON.parse(gbubbler_song_info);
 
-			}else{
+setInterval(function(){
+	var bubbler_song_info=localStorage['bubbler_song_info'];
+		bubbler_song_info=JSON.parse(bubbler_song_info);
+	if(bubbler_song_info.channel!=gbubbler_song_info.channel){
+		console.log("channel changed:"+bubbler_song_info.channel);
+		gbubbler_song_info=bubbler_song_info;
 
-			}
-		},10000);
-}
-console.log(bubbler_song_info.channel);
-
+		if(gbubbler_song_info.channel=="私人兆赫" || gbubbler_song_info.channel=="红心兆赫"){
+				//私人兆赫与红心兆赫，do nothing
+				//用户一直就在大厅
+				console.log("私人和红心兆赫不响应任何房间请求");
+		}else{
+			//复杂版本的，需要在服务器做很多动作
+			//socket.emit("join_room",{room:gbubbler_song_info.channel,url:mine_profile.usr_id,avtor:mine_profile.usr_img});
+			
+			//简单版本的，几乎无验证这类的事情
+			socket.emit("join_room",gbubbler_song_info.channel);
+		}
+	}//end of 判断是否产生变化
+},5000);
 
 
 var __getServerAddress=function(){
@@ -104,7 +113,9 @@ var __getServerAddress=function(){
 				console.log(e);
 			}
 
-			socket.emit("join_room",bubbler_song_info.channel);
+
+
+			
 
 			//接受新消息的逻辑部分
 			socket.on("new_message",function(data){

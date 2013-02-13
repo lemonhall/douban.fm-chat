@@ -29,6 +29,7 @@ var getRoomIamIn=function(socket){
             }
         });
       //console.log(my_room);
+      my_room=my_room.substring(1);
     return my_room;
 },leaveOtherRoom=function(socket){
     var room=getRoomIamIn(socket);
@@ -43,6 +44,7 @@ var getRoomIamIn=function(socket){
     }
     return re;
 };
+
 
 io.sockets.on('connection', function (socket) {
   
@@ -66,7 +68,6 @@ io.sockets.on('connection', function (socket) {
 
       var room=getRoomIamIn(socket);
       //room的内部表达形式是"/room_name"，结果调用的时候你得去掉那个slash
-          room=room.substring(1);
           console.log(room);
       //永远不要向大厅''转发任何消息，那是会造成广播风暴的
       if(room){
