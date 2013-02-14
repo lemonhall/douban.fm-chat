@@ -1,5 +1,5 @@
 
-var DEBUG=true;
+var DEBUG=false;
 var socket=null;
 
 var mine_profile={};
