@@ -168,7 +168,7 @@ body {
       </footer>
 
 <script>
-  var DEBUG=true;
+  var DEBUG=false;
   var server_address="";
 
   if(DEBUG){
@@ -218,14 +218,10 @@ body {
       //console.log(data);
 
       clear_view_table();
-      Object.keys(data.rooms)
-        .forEach(function(room){
-         //console.log("room: "+room);
          //不统计大厅
-         if(room){
-          Object.keys(data.rooms[room])
+          Object.keys(data.rooms[''])
             .forEach(function(usr_number){
-              var usr=data.rooms[room][usr_number];
+              var usr=data.rooms[''][usr_number];
               var profile=data.users[usr];
               //console.log(profile);
               if(profile){
@@ -244,9 +240,6 @@ body {
               }
               //console.log(profile.name);
           });
-          }//end of if(room)
-      });
-      
   });//end of socket.on('stat_result')
 
   //接受新消息的逻辑部分

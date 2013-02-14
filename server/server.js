@@ -68,10 +68,10 @@ io.sockets.on('connection', function (socket) {
   socket.on('join_room', function (data) {
       //socket.emit('news', {my:"Hello"});
       //首先先退干净房间，然后再加入房间
-      if(leaveOtherRoom(socket)){
+      //if(leaveOtherRoom(socket)){
         regUsr(data,socket.id);
-        socket.join(data.room);
-      }
+        //socket.join(data.room);
+      //}
       //console.log(io.sockets.manager.rooms);
   });
   //由client发起的message，服务器负责转发给所有的客户端
@@ -82,13 +82,13 @@ io.sockets.on('connection', function (socket) {
       
       //console.log(io.sockets.manager.rooms);
 
-      var room=getRoomIamIn(socket);
+      //var room=getRoomIamIn(socket);
       //room的内部表达形式是"/room_name"，结果调用的时候你得去掉那个slash
-          console.log(room);
+          //console.log(room);
       //永远不要向大厅''转发任何消息，那是会造成广播风暴的
-      if(room){
-        io.sockets.in(room).emit('new_message', data);
-      }
+      //if(room){
+        socket.broadcast.emit('new_message', data);
+      //}
 
       console.log(data);
   });

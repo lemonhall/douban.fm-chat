@@ -30,7 +30,7 @@
 .me {
     float: left;   
     margin: 5px 45px 5px 20px;
-    font-size: 20px;
+    font-size: 12px;
     clear:both;         
 }
 
@@ -42,7 +42,7 @@
 .you {
     float: right;    
     margin: 5px 20px 5px 45px;
-    font-size: 20px;
+    font-size: 12px;
     clear:both;           
 }
 
@@ -55,7 +55,12 @@
 #chat_content{
     overflow-y:scroll;
     left:20px;
-    height:600px;
-    width:400px;
+    height:500px;
+    width:520px;
     border:1px;
+}
+
+#chat_box{
+    left:20px;
+    width:500px;
 }

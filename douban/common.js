@@ -220,11 +220,11 @@ var __getUserProfile=function(){
 
 	//打开和关闭的滑动效果，倒是可以抄袭一下
 	var chat_side_ctrl_btn=$("#chat-sidebar");
-	chat_side_ctrl_btn.click(function(){
+	chat_side_ctrl_btn.dblclick(function(){
 		var sidebar_class=$("#chat-sidebar").attr("class");
 		//console.log(sidebar_class);
 		if(sidebar_class=="close" || sidebar_class==undefined || sidebar_class==""){
-			$("#chat-sidebar").animate({width: 474}, 500, function() {
+			$("#chat-sidebar").animate({width: 574}, 500, function() {
 	                $("#chat-sidebar").toggleClass("open");
 	        });
         }
