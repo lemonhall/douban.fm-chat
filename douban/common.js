@@ -4,24 +4,53 @@ var mine_profile={};
 var gbubbler_song_info=localStorage['bubbler_song_info'];
 	gbubbler_song_info=JSON.parse(gbubbler_song_info);
 
-setInterval(function(){
-	var bubbler_song_info=localStorage['bubbler_song_info'];
-		bubbler_song_info=JSON.parse(bubbler_song_info);
-	if(bubbler_song_info.channel!=gbubbler_song_info.channel){
-		console.log("channel changed:"+bubbler_song_info.channel);
-		gbubbler_song_info=bubbler_song_info;
+var join_room=function(){
+//复杂版本的，需要在服务器做很多动作
+//socket.emit("join_room",{room:gbubbler_song_info.channel,url:mine_profile.usr_id,avtor:mine_profile.usr_img});
+// var regUsr=function(data,uuid){
+//     var usr={};
+//     var usr.url=data.url;
+//     var usr.img=data.img;
+//     var usr.room=data.room;
+//     var usr.name=data.name;
 
+//     users[uuid]=usr;
+
+// };
 		if(gbubbler_song_info.channel=="私人兆赫" || gbubbler_song_info.channel=="红心兆赫"){
 				//私人兆赫与红心兆赫，do nothing
 				//用户一直就在大厅
 				console.log("私人和红心兆赫不响应任何房间请求");
 		}else{
-			//复杂版本的，需要在服务器做很多动作
-			//socket.emit("join_room",{room:gbubbler_song_info.channel,url:mine_profile.usr_id,avtor:mine_profile.usr_img});
-			
+			var join_reg_msg={};
+				join_reg_msg.room=gbubbler_song_info.channel||"";
+				join_reg_msg.url=mine_profile.usr_id||"";
+				join_reg_msg.img=mine_profile.usr_img||"";
+				join_reg_msg.name=mine_profile.name||"";
+
 			//简单版本的，几乎无验证这类的事情
-			socket.emit("join_room",gbubbler_song_info.channel);
-		}
+			socket.emit("join_room",join_reg_msg);
+		}		
+
+
+};//End of join_room function
+
+//启动后5秒自动加入某个兆赫
+setTimeout(function(){
+			join_room();
+},5000);
+
+//检查兆赫切换以及JOIN ROOM的逻辑部分
+setInterval(function(){
+	var bubbler_song_info=localStorage['bubbler_song_info'];
+		bubbler_song_info=JSON.parse(bubbler_song_info);
+
+	if(bubbler_song_info.channel!=gbubbler_song_info.channel){
+		console.log("channel changed:"+bubbler_song_info.channel);
+		gbubbler_song_info=bubbler_song_info;
+
+		join_room();
+		
 	}//end of 判断是否产生变化
 },5000);
 
@@ -63,25 +92,15 @@ var __getServerAddress=function(){
 		var deferred = $.Deferred(); 
 		var promise = deferred.promise();
 
-		if (localStorage['fmchat_serverAddress']) {
-			var temp=localStorage.getItem('fmchat_serverAddress');
-			//全局变量
-			if (verifyServerAddress(temp)) {
-				deferred.resolve(temp);
-			}else{
-				deferred.reject("fail to get a verifyed ServerAddress..");
-			}
-			//console.log(temp);
-		}else{
 		__getServerAddress().then(function(xhr){
-			console.log(xhr);
+			//console.log(xhr);
 			var div=$(xhr.response).find("#link-report");
 			var serverAddress_a=$(div).find("a:first");
 			var serverAddress=serverAddress_a[0].href;
 
 			if (verifyServerAddress(serverAddress)) {
 				//是第一次，则设置标记,初始化一个空数组，并设置给localStorage
-  				localStorage.setItem('fmchat_serverAddress', serverAddress);
+  				//localStorage.setItem('fmchat_serverAddress', serverAddress);
 				deferred.resolve(serverAddress);
 			}else{
 				deferred.reject("fail to get a verifyed ServerAddress..");
@@ -91,19 +110,7 @@ var __getServerAddress=function(){
 
   		});//END of getServerAddress()
 
-		}//END of else
-
 		return promise;
-	},
-	check_connection=function(){
-		setInterval(function(){
-			console.log(socket.socket.open);
-			if(socket.socket.open){
-
-			}else{
-
-			}
-		},1000);
 	},
 	init_connection=function(){
 		getServerAddress().then(function(address){
@@ -111,11 +118,7 @@ var __getServerAddress=function(){
 				socket= io.connect(address);
 			}catch(e){
 				console.log(e);
-			}
-
-
-
-			
+			}			
 
 			//接受新消息的逻辑部分
 			socket.on("new_message",function(data){
@@ -174,15 +177,6 @@ var __getUserProfile=function(){
 		return promise;
 	},
 	getUserProfile=function(){
-		//缓存策略
-		//TODO:带上时间戳，让缓存别那么傻，另外边界条件也得好好检查
-		//console.log(localStorage['douban_mine_profile']);
-		if (localStorage['douban_mine_profile']) {
-			var temp=localStorage.getItem('douban_mine_profile');
-			//全局变量
-			mine_profile=JSON.parse(temp);
-			console.log(mine_profile);
-		}else{
 		__getUserProfile().then(function(xhr){
 			console.log(xhr);
 			var usr_profile=$(xhr.response).find("#db-usr-profile");
@@ -190,23 +184,23 @@ var __getUserProfile=function(){
 			var usr_avtor=$(usr_profile).find("img");
 			var usr_id=usr_href.attr("href");
 			var usr_img=usr_avtor.attr("src");
+			var usr_name=usr_avtor.attr("alt");
+
 			var my_profile={};
 				my_profile.usr_id=usr_id;
 				my_profile.usr_img=usr_img;
+				my_profile.name=usr_name;
+
 			//全局变量
 			mine_profile=my_profile;
 			console.log(usr_profile);
 			console.log(usr_href.attr("href"));
 			console.log(usr_avtor.attr("src"));
-
-			//是第一次，则设置标记,初始化一个空数组，并设置给localStorage
-  			localStorage.setItem('douban_mine_profile', JSON.stringify(my_profile));
   		});//END of __getUserProfile()
-
-		}//END of else
 
 	},
 	init_ui=function(){
+
 	var fm_sidebar=$("#fm-sidebar");
 	var chat_sidebar="<div id='chat-sidebar' style='position: absolute;top: 0;left: 26px;width: 26px;height: 100%;background: #fff;z-index: 888;-webkit-box-shadow: 10px 0 10px 0 rgba(0,0,0,0.1);box-shadow: 10px 0 10px 0 rgba(0,0,0,0.1);overflow: hidden;'>";
 	var chat_side_inner="<div class='chat-side-inner' style='margin:26px;'><div id='chat_content' style=''></div><br>"+

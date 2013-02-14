@@ -1,21 +1,17 @@
-var app = require('http').createServer(handler)
-  , io = require('socket.io').listen(app)
-  , fs = require('fs')
+var express = require('express');
+var app=express();
+var server = require('http').createServer(app)
+  , io = require('socket.io').listen(server);
 
-app.listen(9000);
 
-function handler (req, res) {
-  fs.readFile(__dirname + '/index.html',
-  function (err, data) {
-    if (err) {
-      res.writeHead(500);
-      return res.end('Error loading index.html');
-    }
+app.use('/bootstrap', express.static(__dirname + '/bootstrap'));
 
-    res.writeHead(200);
-    res.end(data);
-  });
-}
+server.listen(9000);
+
+app.get('/', function (req, res) {
+  res.sendfile(__dirname + '/index.html');
+});
+
 //得到当前我参加的房间名
 //为了防止作弊，所以放在服务端
 //另外，用户默认会在大厅里，大厅的房间名就是''，空字符串
@@ -45,8 +41,27 @@ var getRoomIamIn=function(socket){
     return re;
 };
 
+var users={};
+
+var regUsr=function(data,uuid){
+    var usr={};
+        usr.url=data.url;
+        usr.img=data.img;
+        usr.room=data.room;
+        usr.name=data.name;
+
+    users[uuid]=usr;
+
+};
+
 
 io.sockets.on('connection', function (socket) {
+
+  //给后台界面以统计能力
+  socket.on('stats', function () {
+      socket.emit('stat_result', {rooms:io.sockets.manager.rooms,users:users});
+
+  });
   
   //响应客户端发起的加入某个房间的请求
   //在加入某个房间前，可能需要先推出它之前所在的房间
@@ -54,7 +69,8 @@ io.sockets.on('connection', function (socket) {
       //socket.emit('news', {my:"Hello"});
       //首先先退干净房间，然后再加入房间
       if(leaveOtherRoom(socket)){
-        socket.join(data);
+        regUsr(data,socket.id);
+        socket.join(data.room);
       }
       //console.log(io.sockets.manager.rooms);
   });
@@ -64,7 +80,7 @@ io.sockets.on('connection', function (socket) {
       //socket.emit('news', {my:"Hello"});
       //socket.broadcast.emit(,data);
       
-      console.log(io.sockets.manager.rooms);
+      //console.log(io.sockets.manager.rooms);
 
       var room=getRoomIamIn(socket);
       //room的内部表达形式是"/room_name"，结果调用的时候你得去掉那个slash
