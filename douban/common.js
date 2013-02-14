@@ -1,3 +1,5 @@
+
+var DEBUG=true;
 var socket=null;
 
 var mine_profile={};
@@ -115,7 +117,11 @@ var __getServerAddress=function(){
 	init_connection=function(){
 		getServerAddress().then(function(address){
 			try{
-				socket= io.connect(address);
+				if(DEBUG){
+					socket= io.connect("http://localhost:9000/");
+				}else{
+					socket= io.connect(address);
+				}
 			}catch(e){
 				console.log(e);
 			}			

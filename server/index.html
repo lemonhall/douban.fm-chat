@@ -168,23 +168,56 @@ body {
       </footer>
 
 <script>
-  var socket = io.connect('http://localhost:9000');
+  var DEBUG=true;
+  var server_address="";
+
+  if(DEBUG){
+    server_address="http://localhost:9000/";
+  }else{
+    server_address="http://220.181.49.166:9000/";
+  }
+  var socket = io.connect(server_address);
 
   //=============================================
   //Stat programge...
   var stat_result=$("#stat_result");
   var btn_stat=$("#btn_stat");
+  var stat_table=$("#stat_table tbody");
 
   btn_stat.bind("click",function(){
     socket.emit('stats');
   });
+  var clear_view_table=function(){      
+          //clear the table
+          stat_table.html("");
+  },
+  join_room=function(room){
+//复杂版本的，需要在服务器做很多动作
+//socket.emit("join_room",{room:gbubbler_song_info.channel,url:mine_profile.usr_id,avtor:mine_profile.usr_img});
+// var regUsr=function(data,uuid){
+//     var usr={};
+//     var usr.url=data.url;
+//     var usr.img=data.img;
+//     var usr.room=data.room;
+//     var usr.name=data.name;
+
+//     users[uuid]=usr;
+
+// };
+      var join_reg_msg={};
+        join_reg_msg.room=room||"";
+        join_reg_msg.url="http://www.douban.com/people/lemonhall2012/";
+        join_reg_msg.img="http://img3.douban.com/icon/u55895127-24.jpg";
+        join_reg_msg.name="管理员";
+
+      //简单版本的，几乎无验证这类的事情
+      socket.emit("join_room",join_reg_msg);
+};//End of join_room function
 
   socket.on('stat_result', function (data) {
       //console.log(data);
-      var stat_table=$("#stat_table tbody");
 
-          stat_table.html("");
-
+      clear_view_table();
       Object.keys(data.rooms)
         .forEach(function(room){
          //console.log("room: "+room);
@@ -197,7 +230,8 @@ body {
               //console.log(profile);
               if(profile){
                 //console.log(profile);
-                var tr="<tr><td>"+profile.room+"</td><td>"+
+        var tr="<tr><td><a class='room'>"+
+                  profile.room+"</a></td><td>"+
                 "<a target='_blank' href='"+
                   profile.url+
                 "'><img class='img-polaroid' src='"+
@@ -213,7 +247,32 @@ body {
           }//end of if(room)
       });
       
+  });//end of socket.on('stat_result')
+
+  //接受新消息的逻辑部分
+  socket.on("new_message",function(data){
+      console.log(data);
+      var chat_content=$("#chat_content");
+      var message=data.message;
+      var avtor=data.avtor;
+
+      var tr="<tr><td><img class='img-polaroid' src='"+
+              avtor+"'></td>"+
+              "<td>"+message+"</td></tr>";
+      stat_table.append(tr);
+        
+        //var t=$("#chat_content")[0];
+        //t.scrollTop = t.scrollHeight;
+
   });
+
+  $(document).on("click", ".room", function(){
+      var room_name=$(this).html();
+        console.log(room_name);
+        clear_view_table();
+        join_room(room_name);
+  });
+    
 </script>
 </body>
 </html>
